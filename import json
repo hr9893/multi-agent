@@ -1,0 +1,55 @@
+mport os
+from datetime import datetime
+
+
+class WorkoutHistoryService:
+    """Handles persistence of generated workout plans in a local JSON file."""
+
+    def __init__(self, file_path: str = "workout_history.json"):
+        self.file_path = file_path
+
+    def _load_history(self) -> list:
+        """Load the workout history from disk, returning an empty list if missing or invalid."""
+        if not os.path.exists(self.file_path):
+            return []
+
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except (json.JSONDecodeError, OSError):
+            return []
+
+        if not isinstance(data, list):
+            return []
+
+        return data
+
+    def _save_history(self, history: list) -> None:
+        """Persist the workout history to disk."""
+        with open(self.file_path, "w", encoding="utf-8") as file:
+            json.dump(history, file, indent=2)
+
+    def save_plan(self, fitness_data: dict, plan: str) -> None:
+        """Save a generated workout plan along with the user's fitness inputs and a timestamp."""
+        history = self._load_history()
+
+        entry = {
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "fitness_goal": fitness_data.get("fitness_goal"),
+            "experience_level": fitness_data.get("experience_level"),
+            "available_days": fitness_data.get("available_days"),
+            "available_equipment": fitness_data.get("available_equipment"),
+            "injuries": fitness_data.get("injuries"),
+            "plan": plan
+        }
+
+        history.append(entry)
+        self._save_history(history)
+
+    def get_history(self) -> list:
+        """Return the list of saved workout plans."""
+        return self._load_history()
+
+    def clear_history(self) -> None:
+        """Remove all saved workout plans."""
+        self._save_history([])
