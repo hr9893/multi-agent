@@ -6,7 +6,7 @@ A production-grade, multi-agent AI system designed to handle complex, distribute
 
 ## 📌 Overview
 
-This project implemints a multi-agent framework where individual AI agents cooperate, pass context, and execute workflows to solve complex workloads. Instead of relying on a single large language model (LLM) prompt, this system breaks down tasks into specialized sub-problems handled by dedicated agents.
+This project implements a multi-agent framework where individual AI agents cooperate, pass context, and execute workflows to solve complex workloads. Instead of relying on a single large language model (LLM) prompt, this system breaks down tasks into specialized sub-problems handled by dedicated agents.
 
 ### Key Features
 * **Specialized Agant Architecteures:** Every agent is equipped with distinct system promts, tools, and constraints.
