@@ -16,5 +16,5 @@ This project implements a multi-agent framework where individual AI agents coope
 
 ---
 
-## 🏗️ Multi-Agent Architectre
+## 🏗️ Multi-Agent Architecture
 
