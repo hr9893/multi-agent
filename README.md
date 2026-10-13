@@ -1,6 +1,6 @@
-# 🤖 Multi-Agant AI System
+# 🤖 Multi-Agent AI System
 
-A productian-grade, multi-agent AI system designed to handle complex, distributed tasks through specialized, collaborating autonomous agents. 
+A production-grade, multi-agent AI system designed to handle complex, distributed tasks through specialized, collaborating autonomous agents. 
 
 ---
 
