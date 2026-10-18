@@ -1,47 +1,14 @@
-from groq import Groq
-import streamlit as st
+from app.LLMService import GroqProvider, LLMService, _read_secret
 
-class GroqService:
 
-    def generate_response(self, fitness_data: str):
+class GroqService(LLMService):
+    """Backward-compatible Groq-only service.
 
-        client = Groq(api_key=st.secrets["GROQ_API_KEY"]) 
+    Kept so existing imports keep working. New code should use
+    :class:`app.LLMService.LLMService`, which falls back to other providers
+    when Groq is unavailable.
+    """
 
-        prompt = f"""
-You are a professional fitness planning assistant.
-
-Create a personalized workout plan using the following user information :
-
-Fitness Goal:{fitness_data['fitness_goal']}
-
-Experience Level: {fitness_data['experience_level']}
-
-Available Days: {fitness_data['available_days']}
-
-Available Equipment:{fitness_data['available_equipment']}
-
-injuries: {fitness_data['injuries']}
-
-Create a workout plan based on this information.
-
-Include:
-- Workout for each day
-- Exercises
-- Sets
-- Repetitions
-- Rest periods
-- General recommendations
-"""
-
-        response = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
-            messages=[{
-                "role": "system",
-                "content": "You are a professional fitness assistant."
-            }, {
-                "role": "user",
-                "content": prompt
-            }])
-
-        return response.choices[0].message.content
-
+    def __init__(self):
+        super().__init__(
+            providers=[GroqProvider(api_key=_read_secret("GROQ_API_KEY"))])
