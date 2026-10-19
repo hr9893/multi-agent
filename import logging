@@ -1,0 +1,73 @@
+from app.GroqService import GroqService
+from app.OpenAIService import OpenAIService
+
+logger = logging.getLogger(__name__)
+
+# Provider specific errors that signal an exhausted budget, quota or rate limit.
+# The imports are defensive so this module still imports when a provider
+# package is not installed.
+try:
+    from groq import RateLimitError as GroqRateLimitError
+except Exception:  # pragma: no cover - optional dependency
+    GroqRateLimitError = None
+
+try:
+    from openai import APIStatusError as OpenAIAPIStatusError
+    from openai import RateLimitError as OpenAIRateLimitError
+except Exception:  # pragma: no cover - optional dependency
+    OpenAIAPIStatusError = None
+    OpenAIRateLimitError = None
+
+
+def _quota_error_types():
+    """Return the provider error classes that indicate quota/rate limits."""
+    return tuple(
+        error_type
+        for error_type in (
+            GroqRateLimitError,
+            OpenAIRateLimitError,
+            OpenAIAPIStatusError,
+        )
+        if error_type is not None
+    )
+
+
+class LLMFallbackService:
+    """Try LLM providers in order and fall back when one of them fails."""
+
+    def __init__(self, providers=None):
+        if providers is None:
+            providers = [
+                ("Groq", GroqService()),
+                ("OpenAI", OpenAIService()),
+            ]
+        self.providers = list(providers)
+
+    def generate_response(self, fitness_data: str) -> str:
+        errors = []
+
+        for name, provider in self.providers:
+            try:
+                return provider.generate_response(fitness_data)
+            except Exception as e:
+                if _quota_error_types() and isinstance(e, _quota_error_types()):
+                    logger.warning(
+                        "%s LLM quota or rate limit exhausted, "
+                        "falling back to the next provider: %s",
+                        name,
+                        e,
+                    )
+                else:
+                    logger.warning(
+                        "%s LLM request failed, "
+                        "falling back to the next provider: %s",
+                        name,
+                        e,
+                    )
+                errors.append(f"{name}: {e}")
+
+        attempted = ", ".join(name for name, _ in self.providers)
+        raise RuntimeError(
+            f"All LLM providers failed (attempted: {attempted}). "
+            f"Errors: {'; '.join(errors)}"
+        )
