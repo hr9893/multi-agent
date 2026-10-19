@@ -17,3 +17,31 @@ This project implements a multi-agent framework where individual AI agents coope
 ---
 
 ## 🏗️ Multi-Agent Architechture
+
+---
+
+## 🔁 LLM providers and fallback
+
+The fitness plan generator can use more than one LLM provider. Requests are sent
+through an ordered provider chain:
+
+1. **Groq** (`app/GroqService.py`)
+2. **OpenAI** (`app/OpenAIService.py`)
+
+`app/LLMFallbackService.py` orchestrates the chain. If a provider fails — for
+example because its budget, quota or rate limit is exhausted, or because of any
+other provider error — a warning is logged and the same request is automatically
+retried on the next provider in the chain. If every provider fails, a
+`RuntimeError` listing the attempted providers and their errors is raised.
+
+### Configuration
+
+Both API keys must be set in `.streamlit/secrets.toml`:
+
+```toml
+GROQ_API_KEY = "your-groq-api-key"
+OPENAI_API_KEY = "your-openai-api-key"
+```
+
+The provider order can be changed by passing a custom list of
+`(name, provider)` pairs to `LLMFallbackService(providers=[...])`.
