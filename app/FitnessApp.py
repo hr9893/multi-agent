@@ -1,11 +1,11 @@
 import streamlit as st
-from app.GroqService import GroqService
+from app.LLMFallbackService import LLMFallbackService
 
 
 class FitnessApp:
 
     def __init__(self):
-        self.groq_service = GroqService()
+        self.llm_service = LLMFallbackService()
 
     def run(self):
 
@@ -62,7 +62,7 @@ class FitnessApp:
 
                 with st.spinner("Generating Fitness Plan..."):
 
-                    response = self.groq_service.generate_response(
+                    response = self.llm_service.generate_response(
                         fitness_data
                     )
 
