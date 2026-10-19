@@ -17,3 +17,38 @@ This project implements a multi-agent framework where individual AI agents coope
 ---
 
 ## 🏗️ Multi-Agent Architechture
+
+---
+
+## 🔁 LLM Providers and Fallback
+
+The fitness plan generator can use two LLM providers:
+
+| Provider | Service class | Default model | Secret |
+| --- | --- | --- | --- |
+| Groq (primary) | `app/GroqService.py` | `openai/gpt-oss-20b` | `GROQ_API_KEY` |
+| OpenAI (fallback) | `app/OpenAIService.py` | `gpt-4o-mini` | `OPENAI_API_KEY` |
+
+`app/LLMService.py` orchestrates them. It calls the primary provider first; if that
+call raises for any reason (rate limit, exhausted quota/budget, network error, ...)
+it logs a warning and retries the same request with the next provider. If every
+provider fails, a `RuntimeError` listing each provider error is raised.
+
+### Configuration
+
+Add the keys to `.streamlit/secrets.toml` (or the Streamlit Cloud secrets editor):
+
+```toml
+GROQ_API_KEY = "your-groq-key"
+OPENAI_API_KEY = "your-openai-key"
+```
+
+The provider order is optional and defaults to Groq then OpenAI. Override it with a
+comma-separated secret:
+
+```toml
+LLM_PROVIDER_ORDER = "groq,openai"
+```
+
+If `OPENAI_API_KEY` is missing, the OpenAI fallback simply fails and the error is
+reported like any other provider failure; the app does not crash at startup.
